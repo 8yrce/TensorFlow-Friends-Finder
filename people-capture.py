@@ -1,13 +1,13 @@
 #Take screen captures in a specific region of the screen ( maybe only if it sees a face? )
 # Save it off so we can build our friends model off of it
 
-import cv2
+from PIL import Image
 import mss
 import mss.tools
 import os
 import tkinter as tk
 import numpy as np
-
+from resizeimage import resizeimage
 """
 Setting up arg parse
 """
@@ -38,7 +38,7 @@ with detection_graph.as_default():
 			tf.import_graph_def(od_graph_def, name='')
 		
 	except Exception as e:
-		print("[ERROR]: ").format(e)
+		print("[ERROR]: {}".format(e))
 
 #Handles any kind of detection event
 """
@@ -74,12 +74,12 @@ def gather_screen_info():
 """
 PARAMS: monitor - our monitor confines, sees - the current tensorflow inference session
 """
-def image_operations(monitor, sess):
+def image_operations(monitor, sess, detection_graph):
 	#Grab image from the monitor
 	sct_img = mss.mss().grab(monitor)
 	# Save to the picture file
 	mss.tools.to_png(sct_img.rgb, sct_img.size, output="image_to_check.png")
-	image = cv2.imread("image_to_check.png")
+	image = Image.open("image_to_check.png")#cv2.imread("image_to_check.png")
 
 	# Expand dimensions since the model expects images to have shape: [1, None, None, 3]
 	image_expanded = np.expand_dims(image, axis=0)
@@ -109,12 +109,18 @@ def main():
 			while gather_images:
 				# Actual detection
 				try:
-					boxes, scores, classes, num_detections = image_operations(monitor, sess)
+					boxes, scores, classes, num_detections = image_operations(monitor, sess, detection_graph)
 					#Feeding into the detection logic handler
 					#also we pass the top detection for this ( box[0][0] and classes[0][0] ) because we dont really care about anything else for what we need
 					if (detection_handler(boxes[0][0], classes[0][0], scores[0][0])):
 						pic_name = "picture-{}".format(file_counter)
 						os.rename("image_to_check.png", pic_name)
+
+						image = Image.open(pic_name)
+						cover = resizeimage.resize_thumbnail(image, [300,150])
+						padded_img = Image.new('RGB', (300,150), (255,255,255))
+						padded_img.paste(cover, cover.getbbox())
+						padded_img.save (pic_name, image.format, quality=100)
 						file_counter += 1
 				
 				except Exception as e:

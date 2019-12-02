@@ -1,6 +1,6 @@
 Friends-Finder
 
-Be sure you have TensorFlow, OpenCV4, and numpy installed.
+Be sure you have TensorFlow, PIL, and numpy installed.
 
 To capture your own data:
 

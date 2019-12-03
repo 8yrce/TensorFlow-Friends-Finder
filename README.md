@@ -1,12 +1,28 @@
 # Friends-Finder
-## Don't know who is who in Friends? Problem solved!
+## Always wanted your computer to recognize someone specific? Problem solved!
+Using a custom TensorFlow model for computer vision object detection, this application detects specific characters from the show Friends. This effectively simulates using this software on say a security camera to track certain individuals passing through an area. Should you want to detect other people this repo also features scripts to quickly gather and annotate your own data.
 
-Requirements:
+## Why make this project?
+The main motivation behind this project was twofold. To create an application to assist with the time consuming process of annotating images for detection datasets, and to showcase some of my work in computer vision outside of my office in a more casual setting.
+
+## Requirements:
 - TensorFlow 
 - PIL
 - numpy
 
-## To capture your own data:
+
+## How to use: - coming shorty
+```
+$
+```
+Current Status:
+- [x] Finish data collection program
+- [x] Create XML generator for collected data
+- [ ] Complete assisted auto annotation program
+- [ ] Specify network, train model on collected data
+- [ ] Make testing program for new model
+
+## If you want to capture your own data:
 
 First download/extract a model to use to pull people out of frames of the show
 
@@ -22,10 +38,4 @@ python3 people-capture.py --model OptionalPathToYourOwnModel
 	  
 This will take a screen capture anytime your model detects anything on screen. Keep in mind if you use your own model you will have to edit the index at which it looks for as default it is '1' so it only grabs people with coco.
 
-
-
-## To test out on some data ( like an episode of friends ): - coming shorty
-```
-$
-```
 

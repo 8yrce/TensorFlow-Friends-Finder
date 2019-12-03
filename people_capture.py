@@ -77,13 +77,16 @@ PARAMS: monitor - our monitor confines, sees - the current tensorflow inference 
 """
 def image_operations(monitor, sess, detection_graph):
 	#Grab image from the monitor
-	sct_img = mss.mss().grab(monitor)
+	with mss.mss() as sct:
+		sct_img = sct.grab(monitor)
+		sct.close()
 	# Save to the picture file
 	mss.tools.to_png(sct_img.rgb, sct_img.size, output="image_to_check.png")
 	image = Image.open("image_to_check.png")#cv2.imread("image_to_check.png")
 
 	# Expand dimensions since the model expects images to have shape: [1, None, None, 3]
 	image_expanded = np.expand_dims(image, axis=0)
+	image.close()
 	image_tensor = detection_graph.get_tensor_by_name('image_tensor:0')
 	# Each box represents a part of the image where a particular object was detected.
 	boxes = detection_graph.get_tensor_by_name('detection_boxes:0')
@@ -127,6 +130,9 @@ def main():
 						padded_img = Image.new('RGB', (WIDTH,HEIGHT), (255,255,255))
 						padded_img.paste(cover, cover.getbbox())
 						padded_img.save ("{}/screen_captures/{}.png".format(os.getcwd(),pic_name), image.format, quality=100)
+						image.close()
+						padded_img.close()
+						cover.close()
 						os.remove(pic_name)
 						file_counter += 1
 						print("Images captured: {}".format(file_counter), end="\r")

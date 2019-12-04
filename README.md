@@ -19,7 +19,7 @@ python3 people_finder.py --model modelname
 Current Status:
 - [x] Finish data collection program
 - [x] Create XML generator for collected data
-- [ ] Complete assisted auto annotation program
+- [X] Complete assisted auto annotation program
 - [ ] Specify network, train model on collected data
 - [x] Make testing program for new model
 

@@ -14,7 +14,7 @@ import cv2
 os.chdir(".")
 
 def check_annotation(bb_cords, line, image):
-	cv2.rectangle(image, ( bb_cords[0], bb_cords[1] ), (bb_cords[2], bb_cords[3]),(255,255,255), 3) # cv2 takes in image, left/top, right/bottom, color, line thickness
+	cv2.rectangle(image, ( bb_cords[0], bb_cords[1] ), (bb_cords[2], bb_cords[3]),(255,255,255), 2) # cv2 takes in image, left/top, right/bottom, color, line thickness
 	cv2.imshow("Annotation assist", image)
 	cv2.waitKey(1)
 	r = "Ross"
@@ -25,21 +25,21 @@ def check_annotation(bb_cords, line, image):
 	a = "Rachel"
 
 	print("1:	Ross\n2:	Monica\n3:	Joey:\n4:	Chandler\n5:	Pheobe\n6:	Rachel\n0:	None")
-	c = int(input("What character is this?"))
+	choice = int(input("What character is this?		"))
 	
-	if c == 0:
+	if choice == 0:
 		return line
-	elif c == 1:
+	elif choice == 1:
 		character = r
-	elif c == 2:
+	elif choice == 2:
 		character = m
-	elif c == 3:
+	elif choice == 3:
 		character = j
-	elif c == 4:
+	elif choice == 4:
 		character = c
-	elif c == 5:
+	elif choice == 5:
 		character = p
-	elif c == 6:
+	elif choice == 6:
 		character = a
 	else: 
 		"Invalid choice, ignoring"
@@ -94,8 +94,9 @@ def main():
 		for line in old_xml:
 			if "person" in line:
 				#display and approve of the bounding box for each object before changing to label
-			 	temp_image = image
-			 	line = check_annotation(bb_cords[object_counter], line, temp_image)
+			 	image = cv2.imread(image_file)
+			 	line = check_annotation(bb_cords[object_counter], line, image)
+			 	object_counter += 1
 
 			new_xml.append(line)
 		xml = open(xml_file, 'w')

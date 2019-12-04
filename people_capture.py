@@ -46,8 +46,8 @@ with detection_graph.as_default():
 PARAMS: boxes - bb cords of the detect, classes - class of the detect, scores - score of detection
 RETURNS: bool - true if photo contains our class, false if not
 """
-def detection_handler(classes, scores):
-	if classes == 1 and scores > 0.9: # aka people
+def detection_handler(classes, scores, THRESHOLD):
+	if classes == 1 and scores > THRESHOLD: # aka people
 		return True
 	else:
 		return False
@@ -82,6 +82,18 @@ def image_operations(monitor, sess, detection_graph):
 		sct.close()
 	# Save to the picture file
 	mss.tools.to_png(sct_img.rgb, sct_img.size, output="image_to_check.png")
+	#to speed things up we could reduce the size of this before it goes into the model
+	# lets do that now
+	image = Image.open("image_to_check.png")#cv2.imread("image_to_check.png")
+	cover = resizeimage.resize_thumbnail(image, [300,300])
+	cover.save("image_to_save.png", image.format, quality=100)
+	#width, height = cover.size
+	padded_img = Image.new('RGB', (300,300), (255,255,255))
+	padded_img.paste(cover, cover.getbbox())
+	padded_img.save ("image_to_check.png", image.format, quality=100)
+	image.close()
+	padded_img.close()
+	cover.close()
 	image = Image.open("image_to_check.png")#cv2.imread("image_to_check.png")
 
 	# Expand dimensions since the model expects images to have shape: [1, None, None, 3]
@@ -98,12 +110,16 @@ def image_operations(monitor, sess, detection_graph):
 	(boxes, scores, classes, num_detections) = sess.run(
 					[boxes, scores, classes, num_detections],
 					feed_dict={image_tensor: image_expanded})
+	os.remove("image_to_check.png")
 	return boxes, scores, classes, num_detections
 
 #our wonderful little main loop
 def main():
 	WIDTH = 300
 	HEIGHT = 150
+	THRESHOLD = 0.98
+
+
 	input("Press enter when you are ready to start capturing, application will capture full screen")
 	try:
 		os.mkdir("screen_captures")
@@ -121,18 +137,16 @@ def main():
 					boxes, scores, classes, num_detections = image_operations(monitor, sess, detection_graph)
 					#Feeding into the detection logic handler
 					#also we pass the top detection for this ( box[0][0] and classes[0][0] ) to make sure we have at least one hit
-					if (detection_handler(classes[0][0], scores[0][0])):
+					if (detection_handler(classes[0][0], scores[0][0], THRESHOLD)):
 						pic_name = "picture-{}".format(file_counter)
-						os.rename("image_to_check.png", pic_name)
+						os.rename("image_to_save.png", pic_name)
 
 						image = Image.open(pic_name)
-						cover = resizeimage.resize_thumbnail(image, [WIDTH,HEIGHT])
 						padded_img = Image.new('RGB', (WIDTH,HEIGHT), (255,255,255))
-						padded_img.paste(cover, cover.getbbox())
+						padded_img.paste(image, image.getbbox())
 						padded_img.save ("{}/screen_captures/{}.png".format(os.getcwd(),pic_name), image.format, quality=100)
 						image.close()
 						padded_img.close()
-						cover.close()
 						os.remove(pic_name)
 						file_counter += 1
 						print("Images captured: {}".format(file_counter), end="\r")
@@ -141,9 +155,10 @@ def main():
 						#	we should probably record that info so we dont have to annotate it later
 						annotations = []
 						for i in range(5): # we really dont want to label a whole crowd, top 5 is more than enough
-							if classes[0][i] == 1 and scores[0][i] >= 0.9:
+							if classes[0][i] == 1 and scores[0][i] >= THRESHOLD:
 								box = boxes[0][i]
-								annotations.append([box[0],box[1],box[2],box[3], classes[0][i]])
+								# we multiply by two since the model we are using expects 300x300, but we want to save as 300x150
+								annotations.append( [(box[0]*2),box[1],(box[2]*2),box[3], classes[0][i]] )
 						people_xml.generate_xml(annotations, pic_name, WIDTH, HEIGHT)
 
 				except Exception as e:

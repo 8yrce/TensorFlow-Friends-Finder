@@ -12,15 +12,16 @@ The main motivation behind this project was twofold. To create an application to
 
 
 ## How to use: - coming shorty
+For using it with the (soon to be) included model
 ```
-$
+python3 people_finder.py --model modelname
 ```
 Current Status:
 - [x] Finish data collection program
 - [x] Create XML generator for collected data
 - [ ] Complete assisted auto annotation program
 - [ ] Specify network, train model on collected data
-- [ ] Make testing program for new model
+- [x] Make testing program for new model
 
 ## If you want to capture your own data:
 

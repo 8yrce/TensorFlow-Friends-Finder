@@ -13,8 +13,41 @@ import cv2
 
 os.chdir(".")
 
-def check_annotation():
-	print("e")
+def check_annotation(bb_cords, line, image):
+	cv2.rectangle(image, ( bb_cords[0], bb_cords[1] ), (bb_cords[2], bb_cords[3]),(255,255,255), 3) # cv2 takes in image, left/top, right/bottom, color, line thickness
+	cv2.imshow("Annotation assist", image)
+	cv2.waitKey(1)
+	r = "Ross"
+	m = "Monica"
+	j = "Joey"
+	c = "Chandler"
+	p = "Pheobe"
+	a = "Rachel"
+
+	print("1:	Ross\n2:	Monica\n3:	Joey:\n4:	Chandler\n5:	Pheobe\n6:	Rachel\n0:	None")
+	c = int(input("What character is this?"))
+	
+	if c == 0:
+		return line
+	elif c == 1:
+		character = r
+	elif c == 2:
+		character = m
+	elif c == 3:
+		character = j
+	elif c == 4:
+		character = c
+	elif c == 5:
+		character = p
+	elif c == 6:
+		character = a
+	else: 
+		"Invalid choice, ignoring"
+		return line
+
+	line = line.replace("person", character)
+	return line
+
 
 def main():
 	#for each xml file
@@ -22,6 +55,7 @@ def main():
 		#find and open image associated with it
 		image_file = xml_file.replace(".xml", ".png")
 		image = cv2.imread(image_file)
+		#cv2.imshow("test", image)
 
 		#open xml
 		xml = open(xml_file, 'r')
@@ -29,39 +63,44 @@ def main():
 		#go through xml and grab all the bb cordinates
 		bb_cords = []
 		cur_bb = []
+		old_xml = []
 		for line in xml:
 			if "<xmin>" in line:
 				xmin = line.replace("<xmin>","")
 				xmin = xmin.replace("</xmin>","")
 				xmin = xmin.join(xmin.split())
-				cur_bb.append([xmin])
+				cur_bb.append(int(xmin))
 			elif "<ymin>" in line:
 				ymin = line.replace("<ymin>","")
 				ymin = ymin.replace("</ymin>","")
 				ymin = ymin.join(ymin.split())
-				cur_bb.append([ymin])
+				cur_bb.append(int(ymin))
 			elif "<xmax>" in line:
 				xmax = line.replace("<xmax>","")
 				xmax = xmax.replace("</xmax>","")
 				xmax = xmax.join(xmax.split())
-				cur_bb.append([xmax])
+				cur_bb.append(int(xmax))
 			elif "<ymax>" in line:
 				ymax = line.replace("<ymax>","")
 				ymax = ymax.replace("</ymax>","")
 				ymax = ymax.join(ymax.split())
-				cur_bb.append([ymax])
-				bb_cords.append([cur_bb])
+				cur_bb.append(int(ymax))
+				bb_cords.append(cur_bb)
 				cur_bb = []
+			old_xml.append(line)
+		xml.close()
+		new_xml = []
+		object_counter = 0
+		for line in old_xml:
+			if "person" in line:
+				#display and approve of the bounding box for each object before changing to label
+			 	temp_image = image
+			 	line = check_annotation(bb_cords[object_counter], line, temp_image)
 
-		print(bb_cords[0])
-		print(bb_cords[0][0])
-
-		#new_xml = []
-		#for line in xml:
-			#if "person" in line:
-				#display and approve of the bounding box before changing to label
-
-			#new_xml.append(line)
+			new_xml.append(line)
+		xml = open(xml_file, 'w')
+		xml.writelines(new_xml)
+		xml.close()
 
 if __name__ == "__main__":
 	main()

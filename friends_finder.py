@@ -148,8 +148,8 @@ def image_operations(monitor, sess, detection_graph, WIDTH, HEIGHT):
 #our wonderful little main loop
 def main():
 	#make sure these match your model
-	WIDTH = 300
-	HEIGHT = 150
+	WIDTH = 300 * 2
+	HEIGHT = 150 * 2
 	THRESHOLD = 0.7
 
 	input("Press enter when you are ready to start inferencing, please make sure to have the media maximized to take up as much of the screen without using a 'full-screen' option")
@@ -166,16 +166,16 @@ def main():
 					image = cv2.imread("image_to_check.png")
 
 					if (detection_handler(classes[0][0], scores[0][0], THRESHOLD)):
-						print("\n\n\nBB: ", boxes[0][0], "\nClass: ", classes[0][0], "\nScore: ",scores[0][0], "\n\n\n")
+						#print("\n\n\nBB: ", boxes[0][0], "\nClass: ", classes[0][0], "\nScore: ",scores[0][0], "\n\n\n")
 						
-						for i in range(5): # we really dont want to label a whole crowd, top 5 is more than enough
+						for i in range(1): # we really dont want to label a whole crowd, top 5 is more than enough
 							if classes[0][i] > 1 and classes[0][i] < 8 and scores[0][i] >= THRESHOLD:
 								box = boxes[0][i]
 								
 								#Drawing bounding box
 								cv2.rectangle(image, ( int(box[1]*WIDTH), int(box[0]*HEIGHT) ), ( int(box[3]*WIDTH), int(box[2]*HEIGHT) ),(255,255,255), 1) # cv2 takes in image, left/top, right/bottom, color, line thickness
 
-								cv2.putText( image, "{}".format(class_decoder(classes[0][i])), ( int(box[0]*WIDTH), int(box[1]*HEIGHT) ), cv2.FONT_HERSHEY_SIMPLEX, 1, 125 )
+								cv2.putText( image, "{}".format(class_decoder(classes[0][i])), ( int(box[0]*WIDTH), int(box[1]*HEIGHT) ), cv2.FONT_HERSHEY_SIMPLEX, 1, (255,255,255) )
 
 					window = cv2.namedWindow("Friends-Finder", cv2.WINDOW_NORMAL)
 					cv2.resizeWindow("Friends-Finder", 1200,700)

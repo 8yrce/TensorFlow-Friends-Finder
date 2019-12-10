@@ -55,10 +55,36 @@ PARAMS: boxes - bb cords of the detect, classes - class of the detect, scores - 
 RETURNS: bool - true if photo contains our class, false if not
 """
 def detection_handler(classes, scores, THRESHOLD):
-	if classes > 0 and classes < 8 and scores > THRESHOLD: # aka people
+	if classes > 1 and classes < 8 and scores > THRESHOLD: # aka people
 		return True
 	else:
 		return False
+
+#Decodes the class numbers to strings for us to read
+"""
+PARAMS: classes[0][i] = the current class number
+RETURNS: class - the corrosponding string
+"""
+def class_decoder(current_class):
+
+	if current_class == 1:
+		character = "Person"
+	elif current_class == 2:
+		character = "Ross"
+	elif current_class == 3:
+		character = "Monica"
+	elif current_class == 4:
+		character = "Joey"
+	elif current_class == 5:
+		character = "Chandler"
+	elif current_class == 6:
+		character = "Pheobe"
+	elif current_class == 7:
+		character = "Rachel"
+	else: 
+		"Invalid choice, ignoring"
+		character = "ERROR out of bounds"
+	return character
 
 #grabs screen size and returns us the workable area
 """
@@ -116,6 +142,7 @@ def image_operations(monitor, sess, detection_graph, WIDTH, HEIGHT):
 	(boxes, scores, classes, num_detections) = sess.run(
 					[boxes, scores, classes, num_detections],
 					feed_dict={image_tensor: image_expanded})
+
 	return boxes, scores, classes, num_detections
 
 #our wonderful little main loop
@@ -142,14 +169,16 @@ def main():
 						print("\n\n\nBB: ", boxes[0][0], "\nClass: ", classes[0][0], "\nScore: ",scores[0][0], "\n\n\n")
 						
 						for i in range(5): # we really dont want to label a whole crowd, top 5 is more than enough
-							if classes[0][i] > 0 and classes[0][i] < 8 and scores[0][i] >= THRESHOLD:
+							if classes[0][i] > 1 and classes[0][i] < 8 and scores[0][i] >= THRESHOLD:
 								box = boxes[0][i]
 								
 								#Drawing bounding box
-								cv2.rectangle(image, ( int(box[1]*WIDTH), int(box[0]*HEIGHT) ), ( int(box[3]*WIDTH), int(box[2]*HEIGHT) ),(255,255,255), 3) # cv2 takes in image, left/top, right/bottom, color, line thickness
+								cv2.rectangle(image, ( int(box[1]*WIDTH), int(box[0]*HEIGHT) ), ( int(box[3]*WIDTH), int(box[2]*HEIGHT) ),(255,255,255), 1) # cv2 takes in image, left/top, right/bottom, color, line thickness
 
-								cv2.putText( image, "{}".format(classes[0][i]), ( int(box[0]*WIDTH), int(box[1]*HEIGHT) ), cv2.FONT_HERSHEY_SIMPLEX, 2, 255 )
+								cv2.putText( image, "{}".format(class_decoder(classes[0][i])), ( int(box[0]*WIDTH), int(box[1]*HEIGHT) ), cv2.FONT_HERSHEY_SIMPLEX, 1, 125 )
 
+					window = cv2.namedWindow("Friends-Finder", cv2.WINDOW_NORMAL)
+					cv2.resizeWindow("Friends-Finder", 1200,700)
 					cv2.imshow("Friends-Finder", image)
 					cv2.waitKey(1)
 

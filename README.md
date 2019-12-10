@@ -1,7 +1,8 @@
 # Friends-Finder
+![](media/vid1.gif)
 ## Always wanted your computer to recognize someone specific? Problem solved!
 Using a custom TensorFlow model for computer vision object detection, this application detects specific characters from the show Friends. This effectively simulates using this software on say a security camera to track certain individuals passing through an area. Should you want to detect other people this repo also features scripts to quickly gather and annotate your own data.
-
+![](media/vid2.gif)
 ## Why make this project?
 The main motivation behind this project was twofold. To create an application to assist with the time consuming process of annotating images for detection datasets, and to showcase some of my work in computer vision outside of my office in a more casual setting.
 

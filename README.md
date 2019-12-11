@@ -52,7 +52,28 @@ tar -xzvf ssd_mobilenet_v2_coco_2018_03_29.tar.gz
 python3 people-capture.py || python3 people-capture.py --model OptionalPathToYourOwnModel
 ```
 
-This will take a screen capture anytime your model detects anything on screen. Keep in mind if you use your own model you will have to edit the index at which it looks for as default it is '1' so it only grabs people with coco.
+- When finished, run the annotation program ( if using Friends )
+
+'''
+python3 annotation_assist.py
+'''
+
+- Train data with method of your choosing! Depending on what you choose you may need .jpg not .png.
+'''
+mogrify -format png /path/*.jpg
+'''
+
+## What each py file does:
+- annotation_assist.py: Does just that, assists you with annotating the bounding boxes provided by people_capture.py
+
+- friends_finder.py: Finds characters from the show friends using the included friends_inference.pb model
+
+- people_capture.py: Captures our training data of people from the show us to annotate with annotation_assist.py
+
+- people_finder.py: Fun testing application for testing a model against an episode of Friends. Similair to friends_finder.py, but more generic so you can more easily use it with different models/media.
+
+- people_xml.py: Creates the xml annotations for the data gathered by people_capture.py to be used by annotation_assist.py during the annotation process.
+
 
 ## Build status:
 Current Status:
@@ -61,7 +82,7 @@ Current Status:
 - [X] Complete assisted auto annotation program
 - [X] Specify network, train model on collected data
 - [X] Make testing program for new model 
-- [ ] Optimize program for use with other lower resolution displays
+- [ ] Optimize program for use with other lower resolution displays / multi-monitor setups
 - [ ] Update model for usage on more episodes
 
 

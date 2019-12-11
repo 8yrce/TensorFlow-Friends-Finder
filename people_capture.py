@@ -1,5 +1,8 @@
-#Take screen captures in a specific region of the screen ( maybe only if it sees a face? )
-# Save it off so we can build our friends model off of it
+"""
+ People capture is the application that takes our generic model and uses it to help us find / annotate data
+
+the optional model flag may be used if you would like to use a model other than the one I have for development
+"""
 
 from PIL import Image
 import mss
@@ -115,6 +118,7 @@ def image_operations(monitor, sess, detection_graph):
 
 #our wonderful little main loop
 def main():
+	#make sure this size is what you want your model to train on
 	WIDTH = 300
 	HEIGHT = 150
 	THRESHOLD = 0.98

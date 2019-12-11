@@ -1,3 +1,7 @@
+"""
+	Generates the xml file for our annotations based on the output of our generic model during people_capture
+"""
+
 import os
 import shutil
 import fileinput

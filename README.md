@@ -25,7 +25,7 @@ The main motivation behind this project was twofold. To create an application to
 
 #Using with provided Friends model:
 
-- First, open up an episode of Friends. As of now the model is only trained on S6:E6 ( Ross hugs Rachel ) as I wanted to provide a working example as soon as possible. Check the build status for the latest included episodes. Should still work on episodes not trained on, however the accuracy may be slightly lower.
+- First, open up an episode of Friends. As of now the model is only trained on S6:E2 ( Ross hugs Rachel ) as I wanted to provide a working example as soon as possible. Check the build status for the latest included episodes. Should still work on episodes not trained on, however the accuracy may be slightly lower.
 
 ```
 python3 friends_finder.py --model model/friends_inference.pb

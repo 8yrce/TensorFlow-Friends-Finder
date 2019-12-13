@@ -5,6 +5,7 @@ the optional model flag may be used if you would like to use a model other than 
 """
 
 from PIL import Image
+import cv2
 import mss
 import mss.tools
 import os
@@ -78,50 +79,53 @@ def gather_screen_info():
 """
 PARAMS: monitor - our monitor confines, sees - the current tensorflow inference session
 """
-def image_operations(monitor, sess, detection_graph):
+def image_operations_capture(monitor, sess, detection_graph, WIDTH, HEIGHT):
 	#Grab image from the monitor
-	with mss.mss() as sct:
-		sct_img = sct.grab(monitor)
-		sct.close()
-	# Save to the picture file
-	mss.tools.to_png(sct_img.rgb, sct_img.size, output="image_to_check.png")
-	#to speed things up we could reduce the size of this before it goes into the model
-	# lets do that now
-	image = Image.open("image_to_check.png")#cv2.imread("image_to_check.png")
-	cover = resizeimage.resize_thumbnail(image, [300,300])
-	cover.save("image_to_save.png", image.format, quality=100)
-	#width, height = cover.size
-	padded_img = Image.new('RGB', (300,300), (255,255,255))
-	padded_img.paste(cover, cover.getbbox())
-	padded_img.save ("image_to_check.png", image.format, quality=100)
-	image.close()
-	padded_img.close()
-	cover.close()
-	image = Image.open("image_to_check.png")#cv2.imread("image_to_check.png")
+    with mss.mss() as sct:
+        sct_img = sct.grab(monitor)
+        sct.close()
+    
+    #Convert sct image to bytes
+    image = Image.frombytes("RGB", sct_img.size, sct_img.bgra, "raw", "BGRX")
+    
+    #modifying image to correct size, that way screen size doesnt effect our detection
+    cover = resizeimage.resize_cover(image, [WIDTH,HEIGHT])
+    padded_img = Image.new('RGB', (WIDTH,HEIGHT), (255,255,255))
+    padded_img.paste(cover, cover.getbbox())
+    #saving and closing our image operations
+    padded_img.save ("image_to_check.png", image.format, quality=100)
+    image.close()
+    padded_img.close()
+    cover.close()
+    # reading back in image to use in detection, imread formatting seems to be the most reliable way to format for detection
+    image = cv2.imread("image_to_check.png")
 
-	# Expand dimensions since the model expects images to have shape: [1, None, None, 3]
-	image_expanded = np.expand_dims(image, axis=0)
-	image.close()
-	image_tensor = detection_graph.get_tensor_by_name('image_tensor:0')
-	# Each box represents a part of the image where a particular object was detected.
-	boxes = detection_graph.get_tensor_by_name('detection_boxes:0')
-	# Each score represent how level of confidence for each of the objects.
-	scores = detection_graph.get_tensor_by_name('detection_scores:0')
-	classes = detection_graph.get_tensor_by_name('detection_classes:0')
-	num_detections = detection_graph.get_tensor_by_name('num_detections:0')
+    # Expand dimensions since the model expects images to have shape: [1, None, None, 3]
+    image_expanded = np.expand_dims(image, axis=0)
+    
+    image_tensor = detection_graph.get_tensor_by_name('image_tensor:0')
+    # Each box represents a part of the image where a particular object was detected.
+    boxes = detection_graph.get_tensor_by_name('detection_boxes:0')
+    # Each score represent how level of confidence for each of the objects.
+    scores = detection_graph.get_tensor_by_name('detection_scores:0')
+    # getting our classes detected
+    classes = detection_graph.get_tensor_by_name('detection_classes:0')
+    # gather number of detections made
+    num_detections = detection_graph.get_tensor_by_name('num_detections:0')
+    # run detection
+    (boxes, scores, classes, num_detections) = sess.run(
+                    [boxes, scores, classes, num_detections],
+                    feed_dict={image_tensor: image_expanded})
 
-	(boxes, scores, classes, num_detections) = sess.run(
-					[boxes, scores, classes, num_detections],
-					feed_dict={image_tensor: image_expanded})
-	os.remove("image_to_check.png")
-	return boxes, scores, classes, num_detections
+    return boxes, scores, classes, num_detections, image
+
 
 #our wonderful little main loop
 def main():
 	#make sure this size is what you want your model to train on
 	WIDTH = 300
-	HEIGHT = 150
-	THRESHOLD = 0.98
+	HEIGHT = 300
+	THRESHOLD = 0.9
 
 
 	input("Press enter when you are ready to start capturing, application will capture full screen")
@@ -138,12 +142,12 @@ def main():
 			while gather_images:
 				# Actual detection
 				try:
-					boxes, scores, classes, num_detections = image_operations(monitor, sess, detection_graph)
+					boxes, scores, classes, num_detections, _ = image_operations_capture(monitor, sess, detection_graph, WIDTH, HEIGHT)
 					#Feeding into the detection logic handler
 					#also we pass the top detection for this ( box[0][0] and classes[0][0] ) to make sure we have at least one hit
 					if (detection_handler(classes[0][0], scores[0][0], THRESHOLD)):
 						pic_name = "picture-{}".format(file_counter)
-						os.rename("image_to_save.png", pic_name)
+						os.rename("image_to_check.png", pic_name)
 
 						image = Image.open(pic_name)
 						padded_img = Image.new('RGB', (WIDTH,HEIGHT), (255,255,255))
@@ -161,13 +165,12 @@ def main():
 						for i in range(5): # we really dont want to label a whole crowd, top 5 is more than enough
 							if classes[0][i] == 1 and scores[0][i] >= THRESHOLD:
 								box = boxes[0][i]
-								# we multiply by two since the model we are using expects 300x300, but we want to save as 300x150
-								annotations.append( [(box[0]*2),box[1],(box[2]*2),box[3], classes[0][i]] )
+								
+								annotations.append( [(box[0]),box[1],(box[2]),box[3], classes[0][i]] )
 						people_xml.generate_xml(annotations, pic_name, WIDTH, HEIGHT)
 
 				except Exception as e:
 					print(e)
-					exit()
 
 if __name__ == "__main__":
 	main()

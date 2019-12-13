@@ -22,15 +22,13 @@ RETURNS: line: the new line to place in the xml
 """
 def check_annotation(bb_cords, line, image, xml_file):
 
-	image = cv2.resize(image, (0,0), fx=6, fy=6)
-	cv2.rectangle(image, ( ( bb_cords[0] )*6, (bb_cords[1] )*6 ) , ( ( bb_cords[2] )*6 , ( bb_cords[3])*6 ) ,(255,255,255), 2) # cv2 takes in image, left/top, right/bottom, color, line thickness
+	cv2.rectangle(image, ( ( bb_cords[0] ), (bb_cords[1] ) ) , ( ( bb_cords[2] ) , ( bb_cords[3]) ) ,(255,255,255), 2) # cv2 takes in image, left/top, right/bottom, color, line thickness
 	window = cv2.namedWindow("Annotation assist", cv2.WINDOW_NORMAL)
 	
 	# if your resolution makes this display size too large/small modify the below values
 	cv2.resizeWindow("Annotation assist", 1800,900) # *** If you have issues with screen size change this ***
-	
+
 	cv2.imshow("Annotation assist", image)
-	cv2.waitKey(1)
 
 	r = "Ross"
 	m = "Monica"
@@ -39,28 +37,33 @@ def check_annotation(bb_cords, line, image, xml_file):
 	p = "Pheobe"
 	a = "Rachel"
 
-	print("1:	Ross\n2:	Monica\n3:	Joey:\n4:	Chandler\n5:	Pheobe\n6:	Rachel\n0:	None")
-	choice = int(input("What character is this?		"))
-	
+	print("1:	Ross\n2:	Monica\n3:	Joey:\n4:	Chandler\n5:	Pheobe\n6:	Rachel\n0:	None\nOR 'q' to quit")
+	print("What character is this?		")
+
+	choice = cv2.waitKey(10000) & 0xFF
+
+	if choice == ord('q'):
+		exit()
+
 	print("Saved to: {}\n\n".format(xml_file))
 
 
-	if choice == 0:
+	if choice == ord('0'):
 		character = "Person" # this ensures that if you mark someone as not a main character they dont pop back up in the annotation process as unmarked
-	elif choice == 1:
+	elif choice == ord('1'):
 		character = r
-	elif choice == 2:
+	elif choice == ord('2'):
 		character = m
-	elif choice == 3:
+	elif choice == ord('3'):
 		character = j
-	elif choice == 4:
+	elif choice == ord('4'):
 		character = c
-	elif choice == 5:
+	elif choice == ord('5'):
 		character = p
-	elif choice == 6:
+	elif choice == ord('6'):
 		character = a
 	else: 
-		"Invalid choice, ignoring"
+		print( "Invalid choice '",choice,"'", " ignoring")
 		return line
 
 	line = line.replace("person", character)
@@ -112,8 +115,7 @@ def main():
 			
 			object_counter = 0
 			line_counter = 0
-			#print("OLD xml len: {}".format(len(old_xml)))
-			#print("bb_cords: {}".format(len(bb_cords)))
+			
 			for line in old_xml:
 				if "person" in line:
 					#display and approve of the bounding box for each object before changing to label

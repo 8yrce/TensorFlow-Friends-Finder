@@ -158,8 +158,8 @@ def image_operations(monitor, sess, detection_graph, WIDTH, HEIGHT):
 #our wonderful little main loop
 def main():
     #make sure these match your model if not the included one.
-    WIDTH = 300 * 2 # this is mostly so it looks decent when we display it at a size large enough to use
-    HEIGHT = 150 * 2 # we could also open a second larger version just for display, however for the sake of speed we will keep this for now
+    WIDTH = 300  # this is mostly so it looks decent when we display it at a size large enough to use
+    HEIGHT = 150   # we could also open a second larger version just for display, however for the sake of speed we will keep this for now
     THRESHOLD = 0.7 #seems to give best results between varying lighting conditions
 
     input("Press enter when you are ready to start inferencing, please make sure to have the media maximized to take up as much of the screen without using a 'full-screen' option")

@@ -20,7 +20,7 @@ Setting up arg parse
 """
 import argparse
 parser = argparse.ArgumentParser()
-parser.add_argument('--model', default="model/friends_inference.pb",help="Path to the model")
+parser.add_argument('--model', default="model/friends_inference_3.pb",help="Path to the model")
 args = parser.parse_args()
 
 
@@ -109,6 +109,24 @@ def gather_screen_info():
     return monitor, WIDTH, HEIGHT
 
 
+#Takes our confidence and conveys it into a color ( green >= 85, yellow>=65, red < 65 )
+"""
+PARAMS: score: the confidence score 
+RETURNS: color: RGB color for confidence
+"""
+def color_confidence(score):
+    # BGR color
+    if score >= .85:
+        #print("Green")
+        return (0,255,0)
+    if score >= .65:
+        #print("Yellow")
+        return (0,230,230)
+    else:
+        #print("Red")
+        return (0,0,255)
+
+
 #handles the operations necessary for our monitor to both give us an image / use our model to see if it sees anything
 """
 PARAMS: monitor - our monitor confines, sees - the current tensorflow inference session
@@ -124,7 +142,7 @@ def image_operations(monitor, sess, detection_graph, WIDTH, HEIGHT):
     image = Image.frombytes("RGB", sct_img.size, sct_img.bgra, "raw", "BGRX")
     
     #modifying image to correct size, that way screen size doesnt effect our detection
-    cover = resizeimage.resize_thumbnail(image, [WIDTH,HEIGHT])
+    cover = resizeimage.resize_cover(image, [WIDTH,HEIGHT])
     padded_img = Image.new('RGB', (WIDTH,HEIGHT), (255,255,255))
     padded_img.paste(cover, cover.getbbox())
     #saving and closing our image operations
@@ -159,7 +177,7 @@ def image_operations(monitor, sess, detection_graph, WIDTH, HEIGHT):
 def main():
     #make sure these match your model if not the included one.
     WIDTH = 300  # this is mostly so it looks decent when we display it at a size large enough to use
-    HEIGHT = 150   # we could also open a second larger version just for display, however for the sake of speed we will keep this for now
+    HEIGHT = 300   # we could also open a second larger version just for display, however for the sake of speed we will keep this for now
     THRESHOLD = 0.7 #seems to give best results between varying lighting conditions
 
     input("Press enter when you are ready to start inferencing, please make sure to have the media maximized to take up as much of the screen without using a 'full-screen' option")
@@ -177,15 +195,21 @@ def main():
                     #Feeding into the detection logic handler
                     #also we pass the top detection for this ( box[0][0] and classes[0][0] ) to make sure we have at least one hit
 
-                    for i in range(1): # how many object we want to view per right now we only are interested in 1 at a time while its in development
+                    for i in range(3): # how many object we want to view per right now we only are interested in 1 at a time while its in development
                         #   if our class is not background or person, and the detection confidence is higher than threshold
                         if (detection_handler(classes[0][i], scores[0][i], THRESHOLD)):
                             # grab our bounding box
                             box = boxes[0][i]
+
+                             # set box color depending on how confident it is
+                            color = color_confidence(scores[0][i])
+
                             #Drawing bounding box
-                            cv2.rectangle(image, ( int(box[1]*WIDTH), int(box[0]*HEIGHT) ), ( int(box[3]*WIDTH), int(box[2]*HEIGHT) ),(255,255,255), 1) # cv2 takes in image, left/top, right/bottom, color, line thickness
+                            cv2.rectangle(image, ( int(box[1]*WIDTH), int(box[0]*HEIGHT) ), ( int(box[3]*WIDTH), int(box[2]*HEIGHT) ), color , 1) # cv2 takes in image, left/top, right/bottom, color, line thickness
                             # add text of class to bounding box
-                            cv2.putText( image, "{}".format(class_decoder(classes[0][i])), ( int(box[0]*WIDTH), int(box[1]*HEIGHT) ), cv2.FONT_HERSHEY_SIMPLEX, 1, (255,255,255) )
+
+                            #text is structured x,y for bottom left of text box
+                            cv2.putText( image, "{}".format(class_decoder(classes[0][i])),  ( int(box[1]*WIDTH), int(box[0]*HEIGHT) +20 )  , cv2.FONT_HERSHEY_SIMPLEX, 1, color )
 
                     # updating the cv2 display
                     cv2.imshow("Friends-Finder", image)
@@ -194,7 +218,6 @@ def main():
                 # error handling
                 except Exception as e:
                     print(e)
-                    exit()
 
 if __name__ == "__main__":
     main()

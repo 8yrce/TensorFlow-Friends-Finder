@@ -5,8 +5,6 @@
 ## Always wanted your computer to recognize someone specific? Problem solved!
 Using a custom TensorFlow model for computer vision object detection, this application detects specific characters from the show Friends. This effectively simulates using this software on say a security camera to track certain individuals passing through an area. Should you want to detect other people this repo also features scripts to quickly gather and annotate your own data.
 
-![](media/vid2.gif)
-
 ## Why make this project?
 The main motivation behind this project was twofold. To create an application to assist with the time consuming process of annotating images for detection datasets, and to showcase some of my work in computer vision outside of my office in a more casual setting.
 
@@ -28,7 +26,7 @@ The main motivation behind this project was twofold. To create an application to
 - First, open up an episode of Friends. As of now the model is only trained on S6:E2 ( Ross hugs Rachel ) as I wanted to provide a working example as soon as possible. Check the build status for the latest included episodes. Should still work on episodes not trained on, however the accuracy may be slightly lower.
 
 ```
-python3 friends_finder.py --model model/friends_inference.pb
+python3 friends_finder.py
 ```
 
 For best experience please be sure to:

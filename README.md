@@ -81,6 +81,6 @@ Current Status:
 - [X] Specify network, train model on collected data
 - [X] Make testing program for new model 
 - [ ] Optimize program for use with other lower resolution displays / multi-monitor setups
-- [ ] Update model for usage on more episodes
+- [X] Update model for usage on more episodes
 
 
